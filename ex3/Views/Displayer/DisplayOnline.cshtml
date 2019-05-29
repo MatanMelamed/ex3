@@ -1,0 +1,149 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <style>
+        #currentDot {
+            height: 8px;
+            width: 8px;
+            background-color: red;
+            color: blue;
+            border-radius: 50%;
+            /*display: inline-block;*/
+            position: center;
+            box-shadow: 0 0 0 2px;
+            position: absolute;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background-image: url("/Map/map.png");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        /*#canvas-wrap {
+            position: relative
+        }
+         Make this a positioned parent
+        #overlay {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+        }*/
+    </style>
+</head>
+
+<body>
+    <div id="canvas-wrap">
+        <canvas id="draws"></canvas>
+
+        <div id="overlay">
+            <h1 id="t1"></h1>
+            <h1 id="t2"></h1>
+            <h1 id="lon1">t</h1>
+            <h1 id="lon2">t</h1>
+            <h1 id="lat1">t</h1>
+            <h1 id="lat2">t</h1>
+            <div id="currentDot"></div>
+        </div>
+    </div>
+
+    <script>
+        class Point {
+            constructor() {
+                this.x = 0;
+                this.y = 0;
+            }
+            set X(newX) {
+                this.x = newX;
+            }
+            set Y(newY) {
+                this.y = newY;
+            }
+            get X() {
+                return this.x;
+            }
+            get Y() {
+                return this.y;
+            }
+        }
+
+        var onlineController = (function () {
+            var notFirstTime = false;
+            var lastBeforeCurrentPoint = new Point();
+            var currentPoint = new Point();
+            var params = { query: "/position/longitude-deg,/position/latitude-deg" };
+
+            var canvas = document.getElementById("draws");
+            $("#t1").text("canvas width is " + canvas.width);
+            $("#t2").text("canvas height is " + canvas.height);
+
+
+            var ctx = canvas.getContext("2d");
+            ctx.strokeStyle = "red";
+
+            function GetNewCurrentLocation() {
+                $.post("@Url.Action("QueryData")", params).done(function (locationString) {
+                    var location = locationString.split(',');
+                    $("#lon1").text("before x: " + location[0]);
+                    $("#lat1").text("before y: " + location[1]);
+
+                    lastBeforeCurrentPoint.X = currentPoint.X;
+                    lastBeforeCurrentPoint.Y = currentPoint.Y;
+                    currentPoint.X = (parseFloat(location[0]) + 180) * (window.innerWidth / 360);
+                    currentPoint.Y = (parseFloat(location[1]) + 90) * (window.innerHeight / 180);
+
+                    $("#lon2").text("after x: " + currentPoint.X);
+                    $("#lat2").text("after y: " + currentPoint.Y);
+                });
+            }
+
+            function DrawFromLastToCurrentLine() {
+                ctx.moveTo(lastBeforeCurrentPoint.X, lastBeforeCurrentPoint.Y);
+                ctx.quadraticCurveTo(lastBeforeCurrentPoint.X, lastBeforeCurrentPoint.Y, currentPoint.X, currentPoint.Y);
+                ctx.stroke();
+            }
+
+            function UpdateCurrentLocation() {
+                $("#currentDot").css({ top: currentPoint.Y, left: currentPoint.X });
+            }
+
+            function UpdateCanvas() {
+                GetNewCurrentLocation();
+                if (notFirstTime) {
+                    //DrawFromLastToCurrentLine();
+                } else {
+                    notFirstTime = true;
+                }
+                UpdateCurrentLocation();
+            }
+
+            return {
+                UpdateCanvas: UpdateCanvas
+            };
+        })();
+
+        if (@ViewBag.rate != 0) {
+            var intervalTime = 1000 / @ViewBag.rate;
+            setInterval(onlineController.UpdateCanvas, intervalTime);
+        }
+
+        onlineController.UpdateCanvas();
+
+    </script>
+</body>
+</html>
