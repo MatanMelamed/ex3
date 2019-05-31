@@ -7,10 +7,10 @@ using System.Xml;
 namespace ex3.Models {
 
     public class Location {
-        public double longtitude { get; set; }
-        public double latitude { get; set; }
+        public float longtitude { get; set; }
+        public float latitude { get; set; }
 
-        public Location(double lon, double lat) {
+        public Location(float lon, float lat) {
             this.longtitude = lon;
             this.latitude = lat;
         }
@@ -24,10 +24,23 @@ namespace ex3.Models {
 
     }
 
-    public class FilghtSample {
+    public class FlightSample {
         public Location location { get; set; }
-        public float altitude { get; set; }
-        public float direction { get; set; }
-        public float velocity { get; set; }
+        public float throttle { get; set; }
+        public float rudder { get; set; }
+
+        public FlightSample(float lon, float lat, float throttle, float rudder) {
+            this.location = new Location(lon, lat);
+            this.throttle = throttle;
+            this.rudder = rudder;
+        }
+
+        public void ToXml(XmlWriter writer) {
+            writer.WriteStartElement("FlightSample");
+            location.ToXml(writer);
+            writer.WriteElementString("throttle", throttle.ToString());
+            writer.WriteElementString("rudder", rudder.ToString());
+            writer.WriteEndElement();
+        }
     }
 }

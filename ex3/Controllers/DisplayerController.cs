@@ -12,15 +12,14 @@ namespace WebApplication4.Controllers {
     public class DisplayerController : Controller {
         // GET: Default
 
-        SimulatorClient client = null;
-
         public string Index() {
             return "index";
         }
 
-        public ActionResult Display(string first = "127.0.0.1", int second = 5400, int rate = 0) {
+        public ActionResult Display(string first, int second, int rate = 0) {
             IPAddress address;
             if (IPAddress.TryParse(first, out address)) {
+                SimulatorClient.Instance.Connect(first, second);
                 return DisplayOnline(first, second, rate);
             }
             else {
@@ -29,10 +28,6 @@ namespace WebApplication4.Controllers {
         }
 
         ActionResult DisplayOnline(string ip, int port, int rate) {
-            if (client == null) {
-                //                client = new SimulatorClient(ip, port);
-            }
-
             ViewBag.rate = rate;
             return View("DisplayOnline");
         }
@@ -44,21 +39,22 @@ namespace WebApplication4.Controllers {
 
         [HttpPost]
         public string QueryData(string query) {
-            double[] point = GeneratorForTests.Instance.newPoint;
-            return String.Format("{0},{1}", point[0], point[1]);
-            //double[] data = client.GetData(query.Split(','));
+            //double[] point = GeneratorForTests.Instance.newPoint;
+            //return String.Format("{0},{1}", point[0], point[1]);
+            float[] data = SimulatorClient.Instance.GetDataFromSimulator(query);
 
+            return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
             //return ToXml(new Location(data[0], data[1]));
         }
 
-        string ToXml(Location location) {
+        string ToXml(FlightSample sample) {
             //Initiate XML stuff
             StringBuilder sb = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings();
             XmlWriter writer = XmlWriter.Create(sb, settings);
 
             writer.WriteStartDocument();
-            location.ToXml(writer);
+            sample.ToXml(writer);
             writer.WriteEndDocument();
             writer.Flush();
 

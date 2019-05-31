@@ -2,134 +2,110 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
+<style>
+    body, html {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <style>
-        #currentDot {
-            height: 8px;
-            width: 8px;
-            background-color: red;
-            color: blue;
-            border-radius: 50%;
-            /*display: inline-block;*/
-            position: center;
-            box-shadow: 0 0 0 2px;
-            position: absolute;
-        }
+    body {
+        background-image: url("/Map/map.png");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+    }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            padding: 0;
-            margin: 0;
-        }
+    canvas,.other {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
 
-        body {
-            background-image: url("/Map/map.png");
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-attachment: fixed;
-        }
+    .canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+</style>
 
-        /*#canvas-wrap {
-            position: relative
-        }
-         Make this a positioned parent
-        #overlay {
-            position: absolute;
-            top: 20px;
-            left: 30px;
-        }*/
-    </style>
-</head>
-
-<body>
-    <div id="canvas-wrap">
-        <canvas id="draws"></canvas>
-
-        <div id="overlay">
-            <h1 id="t1"></h1>
-            <h1 id="t2"></h1>
-            <h1 id="lon1">t</h1>
-            <h1 id="lon2">t</h1>
-            <h1 id="lat1">t</h1>
-            <h1 id="lat2">t</h1>
-            <div id="currentDot"></div>
-        </div>
+<div class="canvas-wrap">
+    <canvas id="dotCvs"></canvas>
+    <canvas id="pathCvs"></canvas>
+    <div class="other">
+        <h1 id="lon"></h1>
+        <h1 id="lat"></h1>
     </div>
+</div>
 
-    <script>
-        class Point {
-            constructor() {
-                this.x = 0;
-                this.y = 0;
-            }
-            set X(newX) {
-                this.x = newX;
-            }
-            set Y(newY) {
-                this.y = newY;
-            }
-            get X() {
-                return this.x;
-            }
-            get Y() {
-                return this.y;
-            }
-        }
+<script>
 
         var onlineController = (function () {
-            var notFirstTime = false;
-            var lastBeforeCurrentPoint = new Point();
-            var currentPoint = new Point();
-            var params = { query: "/position/longitude-deg,/position/latitude-deg" };
+            var lastBeforeCurrentPoint = { x: null, y: null};
+            var currentPoint = { x: null, y: null };
+            var params = "/position/longitude-deg,/position/latitude-deg,/controls/engines/current-engine/throttle,/controls/flight/rudder"
 
-            var canvas = document.getElementById("draws");
-            $("#t1").text("canvas width is " + canvas.width);
-            $("#t2").text("canvas height is " + canvas.height);
+            var pathCanvas = document.getElementById("pathCvs");
+            pathCanvas.width = window.innerWidth;
+            pathCanvas.height = window.innerHeight;
+            var pathContext = pathCanvas.getContext("2d");
+            pathContext.strokeStyle = "red";
 
-
-            var ctx = canvas.getContext("2d");
-            ctx.strokeStyle = "red";
+            var dotCanvas = document.getElementById("dotCvs");
+            dotCanvas.width = window.innerWidth;
+            dotCanvas.height = window.innerHeight;
+            var dotContex = dotCanvas.getContext("2d");
 
             function GetNewCurrentLocation() {
-                $.post("@Url.Action("QueryData")", params).done(function (locationString) {
-                    var location = locationString.split(',');
-                    $("#lon1").text("before x: " + location[0]);
-                    $("#lat1").text("before y: " + location[1]);
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("QueryData")",
+                    data: { query: params },
+                    async: false,
+                    success: function (data) {
+                        var xmlDoc = $.parseXML(data),
+                            $xml = $(xmlDoc);
+                        var longtitudeString = $xml.find("lon").text();
+                        var latitudeString = $xml.find("lat").text();
+                        $("#lon").text(longtitudeString);
+                        $("#lat").text(latitudeString);
+                        lastBeforeCurrentPoint.x = currentPoint.x;
+                        lastBeforeCurrentPoint.y = currentPoint.y;
+                        currentPoint.x = (parseFloat(longtitudeString) + 180) * (window.innerWidth / 360);
+                        currentPoint.y = (parseFloat(latitudeString) + 90) * (window.innerHeight / 180);
 
-                    lastBeforeCurrentPoint.X = currentPoint.X;
-                    lastBeforeCurrentPoint.Y = currentPoint.Y;
-                    currentPoint.X = (parseFloat(location[0]) + 180) * (window.innerWidth / 360);
-                    currentPoint.Y = (parseFloat(location[1]) + 90) * (window.innerHeight / 180);
-
-                    $("#lon2").text("after x: " + currentPoint.X);
-                    $("#lat2").text("after y: " + currentPoint.Y);
+                    }
                 });
             }
 
             function DrawFromLastToCurrentLine() {
-                ctx.moveTo(lastBeforeCurrentPoint.X, lastBeforeCurrentPoint.Y);
-                ctx.quadraticCurveTo(lastBeforeCurrentPoint.X, lastBeforeCurrentPoint.Y, currentPoint.X, currentPoint.Y);
-                ctx.stroke();
+                pathContext.moveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y);
+                pathContext.quadraticCurveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y, currentPoint.x, currentPoint.y);
+                pathContext.stroke();
             }
 
-            function UpdateCurrentLocation() {
-                $("#currentDot").css({ top: currentPoint.Y, left: currentPoint.X });
+            function DrawCicrle(color, position, size) {
+                dotContex.fillStyle = color;
+                dotContex.beginPath();
+                dotContex.arc(position.x, position.y, size, 0, 2 * Math.PI);
+                dotContex.fill();
+            }
+
+            function DrawCurrentLocation() {
+                dotContex.clearRect(0, 0, dotCanvas.width, dotCanvas.height);
+                DrawCicrle("blue", currentPoint, 8);
+                DrawCicrle("red", currentPoint, 5);
             }
 
             function UpdateCanvas() {
                 GetNewCurrentLocation();
-                if (notFirstTime) {
-                    //DrawFromLastToCurrentLine();
-                } else {
-                    notFirstTime = true;
+
+                if (lastBeforeCurrentPoint.x != null) {
+                    DrawFromLastToCurrentLine();
                 }
-                UpdateCurrentLocation();
+                DrawCurrentLocation();
             }
 
             return {
@@ -137,13 +113,12 @@
             };
         })();
 
-        if (@ViewBag.rate != 0) {
-            var intervalTime = 1000 / @ViewBag.rate;
-            setInterval(onlineController.UpdateCanvas, intervalTime);
+        window.onload = function () {
+            if (@ViewBag.rate != 0) {
+                var intervalTime = 1000 / @ViewBag.rate;
+                setInterval(onlineController.UpdateCanvas, intervalTime);
+            } else {
+                onlineController.UpdateCanvas();
+            }
         }
-
-        onlineController.UpdateCanvas();
-
-    </script>
-</body>
-</html>
+</script>

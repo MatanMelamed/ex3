@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+<style>
+    #canvas {
+        position: absolute;
+    }
+</style>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    var canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    function DrawCicrle(color, position, size) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(position.x, position.y, size, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    var pos = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2.
+    };
+    DrawCicrle("blue", pos, 10);
+    DrawCicrle("red", pos, 6);
+
+</script>
