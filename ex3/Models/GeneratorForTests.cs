@@ -20,11 +20,14 @@ namespace ex3.Models {
             }
         }
 
-        public double[] newPoint {
+        public float[] newPoint {
             get {
-                double[] point = new double[2];
+                float[] point = new float[4];
                 point[0] = 180 - counter * 2 ;
                 point[1] = -90 + counter * 1;
+                point[2] = 2;
+                point[3] = 3;
+
                 counter++;
                 return point;
             }

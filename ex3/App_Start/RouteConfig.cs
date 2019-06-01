@@ -11,7 +11,7 @@ namespace ex3
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
-            //routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
                 name: "Default",
@@ -25,16 +25,10 @@ namespace ex3
                 defaults: new { controller = "Displayer", action = "Display", rate = UrlParameter.Optional }
             );
 
-            //routes.MapRoute(
-            //    name: "DisplayContinuous",
-            //    url: "display/{first}/{second}/{rate}",
-            //    defaults: new { controller = "Displayer", action = "DisplayContinuous" }
-            //);
-
             routes.MapRoute(
                 name: "Saver",
                 url: "save/{ip}/{port}/{rate}/{time}/{name}",
-                defaults: new { controller = "Save", action = "save" }
+                defaults: new { controller = "Saver", action = "Save" }
             );
         }
     }

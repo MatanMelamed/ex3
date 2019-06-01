@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
 using System.Web.Mvc;
 using System.Xml;
 using ex3.Models;
 
-namespace WebApplication4.Controllers {
+namespace ex3.Controllers {
     public class DisplayerController : Controller {
-        // GET: Default
 
-        public string Index() {
-            return "index";
+        public ActionResult Index() {
+            return View("View");
         }
 
         public ActionResult Display(string first, int second, int rate = 0) {
@@ -32,19 +28,29 @@ namespace WebApplication4.Controllers {
             return View("DisplayOnline");
         }
 
-        ActionResult DisplaySavedMap(string name, int rate) {
-            ViewBag.rate = rate;
-            return View();
+        ActionResult DisplaySavedMap(string fileName, int rate) {
+            InfoModel.Instance.ReadData(fileName);
+            Session["rate"] = rate;
+            Session["SavedLocations"] = InfoModel.Instance.GetNumOfSamples();
+            return View("DisplayOffline");
         }
 
         [HttpPost]
-        public string QueryData(string query) {
-            //double[] point = GeneratorForTests.Instance.newPoint;
-            //return String.Format("{0},{1}", point[0], point[1]);
-            float[] data = SimulatorClient.Instance.GetDataFromSimulator(query);
-
+        public string GetDataFromSimulator(string query) {
+            float[] data = GeneratorForTests.Instance.newPoint;
             return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
-            //return ToXml(new Location(data[0], data[1]));
+
+            //float[] data = SimulatorClient.Instance.GetDataFromSimulator(query);
+            //return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
+        }
+
+        [HttpPost]
+        public string GetDataFromFile() {
+            string[] info = InfoModel.Instance.GetSample().Split(',');
+            return ToXml(new FlightSample(float.Parse(info[0]),
+                                            float.Parse(info[1]),
+                                            float.Parse(info[2]),
+                                            float.Parse(info[3])));
         }
 
         string ToXml(FlightSample sample) {

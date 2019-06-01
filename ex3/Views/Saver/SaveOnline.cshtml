@@ -1,5 +1,6 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿
+@{
+    ViewBag.Title = "SaveOnline";
 }
 
 <style>
@@ -37,11 +38,18 @@
 </div>
 
 <script>
+    var mainInterval = null;
+    var intervalTime = 1000 / @Session["rate"];
 
         var onlineController = (function () {
             var lastBeforeCurrentPoint = { x: null, y: null};
             var currentPoint = { x: null, y: null };
             var params = "/position/longitude-deg,/position/latitude-deg,/controls/engines/current-engine/throttle,/controls/flight/rudder"
+            var inserted = 0;
+            var iterations = @Session["iterations"];
+            
+            var fileName = '@ViewBag.fileName';
+            var toCreateFile = true;
 
             var pathCanvas = document.getElementById("pathCvs");
             pathCanvas.width = window.innerWidth;
@@ -54,19 +62,44 @@
             dotCanvas.height = window.innerHeight;
             var dotContex = dotCanvas.getContext("2d");
 
+            function SaveCurrentLocation(toBeSaved) {
+                $.ajax({
+                    type: "POST",
+                    data: { 'data': toBeSaved,'fileName': fileName, 'toCreateFile': toCreateFile },
+                    url: "@Url.Action("SaveDataSample")",
+                    async: false,
+                    success: function () {
+                        toCreateFile = false
+                        inserted = inserted + 1
+                        if (inserted == iterations) {
+                            clearInterval(mainInterval);
+                            alert("done");
+                        }
+                    }
+                });
+            }
+
             function GetNewCurrentLocation() {
                 $.ajax({
                     type: "POST",
-                    url: "@Url.Action("GetDataFromSimulator")",
+                    url: "@Url.Action("GetDataFromSimulator", "Displayer")",
                     data: { query: params },
                     async: false,
                     success: function (data) {
                         var xmlDoc = $.parseXML(data),
                             $xml = $(xmlDoc);
+                        var longtitudeString = $xml.find("lon").text();
+                        var latitudeString = $xml.find("lat").text();
+                        var throttle = $xml.find("throttle").text();
+                        var rudder = $xml.find("rudder").text();
                         lastBeforeCurrentPoint.x = currentPoint.x;
                         lastBeforeCurrentPoint.y = currentPoint.y;
-                        currentPoint.x = (parseFloat($xml.find("lon").text()) + 180) * (window.innerWidth / 360);
-                        currentPoint.y = (parseFloat($xml.find("lat").text()) + 90) * (window.innerHeight / 180);
+                        currentPoint.x = (parseFloat(longtitudeString) + 180) * (window.innerWidth / 360);
+                        currentPoint.y = (parseFloat(latitudeString) + 90) * (window.innerHeight / 180);
+
+                        var toBeSaved = longtitudeString + ',' + latitudeString + ',' +
+                            throttle + ',' + rudder;
+                        SaveCurrentLocation(toBeSaved);
                     }
                 });
             }
@@ -104,12 +137,8 @@
             };
         })();
 
-        window.onload = function () {
-            if (@ViewBag.rate != 0) {
-                var intervalTime = 1000 / @ViewBag.rate;
-                setInterval(onlineController.UpdateCanvas, intervalTime);
-            } else {
-                onlineController.UpdateCanvas();
-            }
-        }
+    window.onload = function () {
+        mainInterval = setInterval(onlineController.UpdateCanvas, intervalTime);
+    }
 </script>
+

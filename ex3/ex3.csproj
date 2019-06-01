@@ -104,14 +104,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\DisplayerController.cs" />
+    <Compile Include="Controllers\SaverController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\FilghtSample.cs" />
     <Compile Include="Models\GeneratorForTests.cs" />
-    <Compile Include="Models\client1.cs" />
+    <Compile Include="Models\InfoModel.cs" />
     <Compile Include="Models\SimulatorClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -124,11 +124,11 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />
-    <Content Include="Views\tries.cshtml" />
     <Content Include="Views\web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Default\Index.cshtml" />
+    <Content Include="Views\Displayer\DisplayOffline.cshtml" />
+    <Content Include="Views\Saver\SaveOnline.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

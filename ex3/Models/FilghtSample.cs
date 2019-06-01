@@ -21,7 +21,6 @@ namespace ex3.Models {
             writer.WriteElementString("lat", this.latitude.ToString());
             writer.WriteEndElement();
         }
-
     }
 
     public class FlightSample {
