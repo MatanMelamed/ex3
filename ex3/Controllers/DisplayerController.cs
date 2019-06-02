@@ -35,6 +35,7 @@ namespace ex3.Controllers {
             return View("DisplayOffline");
         }
 
+        // get the data from the simulator
         [HttpPost]
         public string GetDataFromSimulator(string query) {
             float[] data = GeneratorForTests.Instance.newPoint;
@@ -44,6 +45,7 @@ namespace ex3.Controllers {
             //return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
         }
 
+        // get data from file
         [HttpPost]
         public string GetDataFromFile() {
             string[] info = InfoModel.Instance.GetSample().Split(',');
@@ -53,6 +55,7 @@ namespace ex3.Controllers {
                                             float.Parse(info[3])));
         }
 
+        //converting FlightSample to XML
         string ToXml(FlightSample sample) {
             //Initiate XML stuff
             StringBuilder sb = new StringBuilder();

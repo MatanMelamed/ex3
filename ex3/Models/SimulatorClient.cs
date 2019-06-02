@@ -64,6 +64,7 @@ namespace ex3.Models {
             float[] data = new float[requests.Length];
 
             for (int i = 0; i < requests.Length; i++) {
+                //sending request for getting data from simulator
                 string request = "get " + requests[i] + "\r\n";
                 Byte[] buffer = System.Text.Encoding.ASCII.GetBytes(request);
                 _stream.Write(buffer, 0, request.Length);

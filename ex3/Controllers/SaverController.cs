@@ -15,7 +15,7 @@ namespace ex3.Controllers {
             ViewBag.fileName = name;
             return View("SaveOnline");
         }
-
+        // Saving the data sample in the file
         public void SaveDataSample(string data, string fileName, bool toCreateFile) {
             InfoModel.Instance.SaveSample(data, fileName, toCreateFile);
         }

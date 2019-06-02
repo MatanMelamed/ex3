@@ -56,6 +56,7 @@
         dotCanvas.height = window.innerHeight;
         var dotContex = dotCanvas.getContext("2d");
 
+        //get the new current location
         function GetNewCurrentLocation() {
             $.ajax({
                 type: "POST",
@@ -71,13 +72,14 @@
                 }
             });
         }
-
+        //drawing line from last location to current location
         function DrawFromLastToCurrentLine() {
             pathContext.moveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y);
             pathContext.quadraticCurveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y, currentPoint.x, currentPoint.y);
             pathContext.stroke();
         }
 
+        //drawing circle
         function DrawCicrle(color, position, size) {
             dotContex.fillStyle = color;
             dotContex.beginPath();
@@ -85,6 +87,7 @@
             dotContex.fill();
         }
 
+        //drawing current location
         function DrawCurrentLocation() {
             dotContex.clearRect(0, 0, dotCanvas.width, dotCanvas.height);
             DrawCicrle("blue", currentPoint, 8);
@@ -101,6 +104,7 @@
 
             leftSamplesNumber -= 1;
             if (leftSamplesNumber == 0) {
+                //send alert we finish show all flight samples in the file
                 setTimeout(function () { alert("Finish Senario, there are no more locations to show!") }, intervalTime)
                 clearInterval(mainInterval)
             }
@@ -112,6 +116,7 @@
     })();
 
     window.onload = function () {
+        //set interval
         mainInterval = setInterval(onlineController.UpdateCanvas, intervalTime);
     }
 

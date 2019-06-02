@@ -61,7 +61,7 @@
             dotCanvas.width = window.innerWidth;
             dotCanvas.height = window.innerHeight;
             var dotContex = dotCanvas.getContext("2d");
-
+             //save the new current location
             function SaveCurrentLocation(toBeSaved) {
                 $.ajax({
                     type: "POST",
@@ -79,6 +79,7 @@
                 });
             }
 
+             //get the new current location
             function GetNewCurrentLocation() {
                 $.ajax({
                     type: "POST",
@@ -103,20 +104,20 @@
                     }
                 });
             }
-
+            //drawing line from last location to current location
             function DrawFromLastToCurrentLine() {
                 pathContext.moveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y);
                 pathContext.quadraticCurveTo(lastBeforeCurrentPoint.x, lastBeforeCurrentPoint.y, currentPoint.x, currentPoint.y);
                 pathContext.stroke();
             }
-
+            //drawing circle
             function DrawCicrle(color, position, size) {
                 dotContex.fillStyle = color;
                 dotContex.beginPath();
                 dotContex.arc(position.x, position.y, size, 0, 2 * Math.PI);
                 dotContex.fill();
             }
-
+            //drawing current location
             function DrawCurrentLocation() {
                 dotContex.clearRect(0, 0, dotCanvas.width, dotCanvas.height);
                 DrawCicrle("blue", currentPoint, 8);
@@ -138,6 +139,7 @@
         })();
 
     window.onload = function () {
+        //set interval
         mainInterval = setInterval(onlineController.UpdateCanvas, intervalTime);
     }
 </script>
