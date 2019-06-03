@@ -38,11 +38,8 @@ namespace ex3.Controllers {
         // get the data from the simulator
         [HttpPost]
         public string GetDataFromSimulator(string query) {
-            float[] data = GeneratorForTests.Instance.newPoint;
+            float[] data = SimulatorClient.Instance.GetDataFromSimulator(query);
             return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
-
-            //float[] data = SimulatorClient.Instance.GetDataFromSimulator(query);
-            //return ToXml(new FlightSample(data[0], data[1], data[2], data[3]));
         }
 
         // get data from file

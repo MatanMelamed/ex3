@@ -7,14 +7,12 @@ using System.Web;
 namespace ex3.Models {
     public class InfoModel {
         private static InfoModel s_instace = null;
-        private bool toCreate;
         private Queue<string> samples;
 
         public static InfoModel Instance {
             get {
                 if (s_instace == null) {
                     s_instace = new InfoModel();
-                    s_instace.toCreate = true;
                     s_instace.samples = new Queue<string>();
                 }
                 return s_instace;
